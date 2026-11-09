@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#101b30">
+  <meta name="description" content="Agent QA 开源学习站：MCP、Runtime、RAG、Memory、Skill、Sandbox、Multi-Agent、asyncio 与 E2E 质量保障。">
+  <title>Agent QA 学习站｜Agent 平台测试与面试复习</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="icon-library">
+    <symbol id="i-compass" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 4-4 2 2-4z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-6h6v6"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5Zm-9 10 9 5 9-5M3 17l9 5 9-5"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h14v17H6a2 2 0 0 1-2-2V5Zm0 13a2 2 0 0 1 2-2h14"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4v1M12 18h.01"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-13-4 18"/></symbol>
+    <symbol id="i-notes" viewBox="0 0 24 24"><path d="M5 3h14v18H5zM8 8h8M8 12h8M8 16h5"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M12 5h7v7M19 5l-9 9M19 14v5H5V5h6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="7.3"/><path d="m16 16 5 5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2m-3-7-1.5 1.5M5 19l1.5-1.5M5 5l1.5 1.5M19 19l-1.5-1.5"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A8 8 0 0 1 9 4 8 8 0 1 0 20 15Z"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 3 6 7 .9-5 4.9 1.2 7-6.2-3.3-6.2 3.3 1.2-7L2 8.9 9 8z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v13m-5-5 5 5 5-5M4 17v4h16v-4"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.8-6M20 3v6h-6"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 6 4 8 9 10 5-2 9-4 9-10V6z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-5 1-5-3-7-3m14 4v-3a3 3 0 0 0-.8-2.3C19 14 21 12.6 21 9a5 5 0 0 0-1.3-3.5c.2-1.2 0-2.4-.5-3.5-1.5 0-3 .7-4 1.6a15 15 0 0 0-6.4 0C7.8 2.7 6.3 2 4.8 2c-.5 1.1-.7 2.3-.5 3.5A5 5 0 0 0 3 9c0 3.6 2 5 5.8 5.7A3 3 0 0 0 8 17v3"/></symbol>
+  </svg>
+  <div class="app-shell" id="app-shell">
+    <aside class="sidebar" id="sidebar" aria-label="主导航">
+      <div class="sidebar-top">
+        <a class="brand" href="#/home" aria-label="返回学习首页">
+          <span class="brand-mark"><span></span><span></span><span></span><span></span></span>
+          <span><strong>AGENT / QA</strong><small>PERSONAL LEARNING LAB</small></span>
+        </a>
+        <div class="sidebar-label">LEARNING SPACE</div>
+        <nav class="nav-list" id="nav-list"></nav>
+      </div>
+      <div class="sidebar-foot">
+        <div class="sidebar-progress"><div class="mini-progress-label"><span>复习进度</span><strong id="sidebar-percent">0%</strong></div><div class="mini-progress"><div id="sidebar-progress-bar"></div></div><p>知识已经学过，掌握程度慢慢积累。</p></div>
+        <a class="side-bottom" href="#/resources"><svg class="i"><use href="#i-github"/></svg> 来源 & GitHub 使用说明</a>
+      </div>
+    </aside>
+    <div class="mobile-backdrop" id="mobile-backdrop"></div>
+    <div class="main-wrap">
+      <header class="topbar">
+        <div class="topbar-left"><button id="menu-button" class="icon-button mobile-menu" aria-label="打开导航"><svg class="i"><use href="#i-menu"/></svg></button><span class="breadcrumb">AGENT QA <span class="crumb-slash">/</span> <strong id="breadcrumb-current">首页</strong></span></div>
+        <div class="topbar-actions">
+          <button class="search-trigger" id="open-search"><svg class="i"><use href="#i-search"/></svg> 搜索内容 <kbd>⌘ K</kbd></button>
+          <button class="icon-button" id="theme-toggle" aria-label="切换明暗主题" title="切换明暗主题"><svg class="i"><use href="#i-moon"/></svg></button>
+        </div>
+      </header>
+      <main id="content" class="content" tabindex="-1"></main>
+      <footer class="footer"><span>为持续学习而造 · 内容版本 2026.11</span><span>无账户 · 无追踪 · 笔记仅保存在本机浏览器</span></footer>
+    </div>
+  </div>
+  <div class="search-modal" id="search-modal" role="dialog" aria-modal="true" aria-labelledby="search-title" hidden>
+    <div class="search-shade" id="search-shade"></div>
+    <div class="search-dialog">
+      <div class="search-row"><svg class="i"><use href="#i-search"/></svg><input id="global-search" placeholder="搜索课程、追问、指标、测试案例、面试题…" aria-label="全站搜索"><button class="plain-button" id="close-search">ESC</button></div>
+      <div class="search-results" id="search-results"><p class="placeholder">试试搜索「超时」「Tool Call」「P95」「asyncio」</p></div>
+      <div class="search-foot">按 Enter 打开第一条结果 · Esc 关闭 · 不会发送任何搜索内容到服务器</div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
