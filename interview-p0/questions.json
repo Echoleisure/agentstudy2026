@@ -1,0 +1,299 @@
+[
+  {
+    "id": "p0-01",
+    "category": "MySQL",
+    "question": "索引为什么使用 B+Tree？",
+    "answer": "InnoDB 主要用 B+Tree，因为它扇出大、树高低、磁盘页访问少，叶子节点有序，既适合等值查找，也适合范围查询。",
+    "followup": "为什么不用 Hash？",
+    "followupAnswer": "Hash 适合等值定位，不支持普通 B+Tree 那样的有序范围扫描。",
+    "test": "构造百万行数据，对比索引和全表扫描的执行计划、扫描行数与 P99。"
+  },
+  {
+    "id": "p0-02",
+    "category": "MySQL",
+    "question": "聚簇索引、二级索引、回表、覆盖索引是什么？",
+    "answer": "聚簇索引叶子节点保存完整行；二级索引叶子节点保存索引列和主键。通过二级索引查到主键后再找完整行叫回表；索引已包含查询所需字段就是覆盖索引。",
+    "followup": "覆盖索引是一种新索引类型吗？",
+    "followupAnswer": "不是，是查询能够直接从索引获取全部所需字段的情况。",
+    "test": "对比 SELECT * 和仅查索引列，检查 EXPLAIN 的 key、Extra 与耗时。"
+  },
+  {
+    "id": "p0-03",
+    "category": "MySQL",
+    "question": "联合索引最左前缀原则是什么？",
+    "answer": "联合索引按字段顺序排序，例如 (a,b,c) 先按 a，再按 b、c。通常要利用前导列才能高效定位。",
+    "followup": "WHERE a=1 AND c=3 呢？",
+    "followupAnswer": "通常可以用 a 定位，c 可能参与索引条件过滤；是否使用取决于执行计划。",
+    "test": "设计 a、ab、abc、b、ac 条件，对比 EXPLAIN。"
+  },
+  {
+    "id": "p0-04",
+    "category": "MySQL",
+    "question": "哪些情况可能导致索引失效？",
+    "answer": "前导模糊匹配、普通索引列上做函数或运算、隐式类型转换、联合索引缺少前导列等，都可能让索引无法高效定位。",
+    "followup": "OR 一定失效吗？",
+    "followupAnswer": "不一定，优化器可能选择 Index Merge 等执行计划。",
+    "test": "针对不同 WHERE 写法运行 EXPLAIN，并验证实际扫描量。"
+  },
+  {
+    "id": "p0-05",
+    "category": "MySQL",
+    "question": "事务 ACID 和 Undo/Redo Log？",
+    "answer": "ACID 是原子性、一致性、隔离性、持久性。Undo 支持回滚与历史版本，Redo 支持崩溃恢复；隔离性依赖 MVCC 和锁。",
+    "followup": "一致性由什么保证？",
+    "followupAnswer": "数据库约束、事务机制与正确的业务逻辑共同保证。",
+    "test": "模拟多步骤写入中途失败，验证回滚和业务约束。"
+  },
+  {
+    "id": "p0-06",
+    "category": "MySQL",
+    "question": "RC 与 RR 有什么区别？",
+    "answer": "RC 的普通一致性读通常每次生成新 Read View；RR 通常复用事务首次一致性读的 Read View，所以同一事务内快照读结果更稳定。",
+    "followup": "SELECT FOR UPDATE 也是快照读吗？",
+    "followupAnswer": "不是，它是当前读，行为不同于普通 SELECT。",
+    "test": "两个事务交错读写，分别在 RC 和 RR 下验证读取结果。"
+  },
+  {
+    "id": "p0-07",
+    "category": "MySQL",
+    "question": "什么是 MVCC？",
+    "answer": "MVCC 通过 Undo 历史版本链和 Read View 可见性规则，让普通读取尽量不阻塞写入，提高并发性能。",
+    "followup": "MVCC 解决所有读写冲突吗？",
+    "followupAnswer": "不是，当前读和写入仍需要锁机制。",
+    "test": "并发更新时验证普通 SELECT 与 SELECT FOR UPDATE 的行为。"
+  },
+  {
+    "id": "p0-08",
+    "category": "MySQL",
+    "question": "行锁、间隙锁、Next-Key Lock？",
+    "answer": "Record Lock 锁索引记录，Gap Lock 锁索引间隙，Next-Key Lock 将记录和前面间隙一起锁住，用于保护范围、防止插入。",
+    "followup": "行锁为什么和索引有关？",
+    "followupAnswer": "InnoDB 行级锁主要加在索引记录上，访问路径会影响锁定范围。",
+    "test": "两个事务执行范围更新和插入，验证锁等待及超时。"
+  },
+  {
+    "id": "p0-09",
+    "category": "MySQL",
+    "question": "死锁如何排查？",
+    "answer": "多个事务循环等待彼此持有的锁就是死锁。可以通过统一加锁顺序、缩短事务、合理索引和有限重试降低风险。",
+    "followup": "怎么看最近死锁？",
+    "followupAnswer": "SHOW ENGINE INNODB STATUS。",
+    "test": "两事务反向更新两行，验证死锁检测、回滚和重试。"
+  },
+  {
+    "id": "p0-10",
+    "category": "MySQL",
+    "question": "慢 SQL 如何排查？",
+    "answer": "先用慢日志或 APM 定位 SQL，再用 EXPLAIN 看 type、key、rows、Extra，同时检查回表、锁等待、连接池和 IO，最后压测验证优化效果。",
+    "followup": "ALL 一定是坏的吗？",
+    "followupAnswer": "不是，小表全表扫描可能更快。",
+    "test": "对比优化前后的 P95/P99、扫描行数和资源使用率。"
+  },
+  {
+    "id": "p0-11",
+    "category": "Redis",
+    "question": "Redis 为什么快？",
+    "answer": "Redis 主要使用内存、高效数据结构、IO 多路复用，核心命令执行主要为单线程，减少了锁竞争。",
+    "followup": "Redis 完全单线程吗？",
+    "followupAnswer": "不是，网络 IO、持久化等可以使用其他线程或进程。",
+    "test": "压测 GET/SET，观察吞吐、延迟与内存。"
+  },
+  {
+    "id": "p0-12",
+    "category": "Redis",
+    "question": "五种常见数据类型？",
+    "answer": "String 适合缓存与计数，Hash 适合对象字段，List 适合简单队列，Set 适合去重，ZSet 适合排名和滑动窗口。",
+    "followup": "如何实现请求计数？",
+    "followupAnswer": "可以用 INCR；计数与 TTL 需要原子化组合以避免竞态。",
+    "test": "并发计数检查是否丢增量、是否正确过期。"
+  },
+  {
+    "id": "p0-13",
+    "category": "Redis",
+    "question": "穿透、击穿、雪崩怎么区分？",
+    "answer": "穿透是查不存在的数据；击穿是热点 Key 过期；雪崩是大量 Key 集中失效或 Redis 故障。分别可用空值缓存/布隆过滤器、互斥重建、TTL 随机化和降级保护。",
+    "followup": "布隆过滤器会误判吗？",
+    "followupAnswer": "可能误判存在，正常情况下不会误判已加入元素不存在。",
+    "test": "模拟不存在 Key、热点 Key 过期和批量 TTL 到期。"
+  },
+  {
+    "id": "p0-14",
+    "category": "Redis",
+    "question": "Redis 与 MySQL 如何保持一致？",
+    "answer": "常见 Cache Aside：读缓存未命中查 DB 并回填；写入先更新 DB 再删除缓存。并发下仍可能短暂不一致，要配合 TTL、重试或版本控制。",
+    "followup": "为什么不先删缓存？",
+    "followupAnswer": "可能在数据库更新前被其他请求回填旧值。",
+    "test": "注入删除缓存失败和并发旧值回填。"
+  },
+  {
+    "id": "p0-15",
+    "category": "Redis",
+    "question": "RDB 和 AOF 区别？",
+    "answer": "RDB 保存快照；AOF 记录写操作以便恢复。AOF 可按刷盘策略缩小丢数据窗口，但不等于绝对零丢失。",
+    "followup": "Redis 重启一定不丢数据吗？",
+    "followupAnswer": "不一定，取决于持久化和故障时机。",
+    "test": "写入后模拟进程故障，核对恢复结果。"
+  },
+  {
+    "id": "p0-16",
+    "category": "Redis",
+    "question": "Redis 分布式锁如何实现？",
+    "answer": "SET key token NX PX ttl 获取锁，释放时原子校验 token，避免误删别人的锁。关键业务还需考虑锁过期后的旧持有者继续执行。",
+    "followup": "锁过期后会怎样？",
+    "followupAnswer": "可能两个客户端同时执行，需 fencing token 或条件更新保护关键写入。",
+    "test": "模拟锁过期、客户端卡顿和竞争释放。"
+  },
+  {
+    "id": "p0-17",
+    "category": "Redis",
+    "question": "Redis 如何做分布式限流？",
+    "answer": "可以通过计数器、滑动窗口或令牌桶算法，多个网关共享 Redis 状态，使用原子操作或 Lua 保证并发正确性。",
+    "followup": "Redis 不可用怎么办？",
+    "followupAnswer": "按业务设计 Fail-open 或 Fail-closed，并验证告警与恢复。",
+    "test": "多网关并发验证全局阈值、租户隔离与窗口边界。"
+  },
+  {
+    "id": "p0-18",
+    "category": "计算机网络",
+    "question": "TCP 为什么三次握手？",
+    "answer": "SYN、SYN+ACK、ACK，让双方同步初始序列号并确认建立连接的必要信息。",
+    "followup": "为什么不是两次？",
+    "followupAnswer": "服务端需要确认客户端收到了自己的 SYN。",
+    "test": "模拟连接建立超时和 SYN 丢包。"
+  },
+  {
+    "id": "p0-19",
+    "category": "计算机网络",
+    "question": "四次挥手与 TIME_WAIT？",
+    "answer": "TCP 全双工，两个方向分别关闭；主动关闭方通常进入 TIME_WAIT，以便处理最后 ACK 丢失和旧报文延迟。",
+    "followup": "TIME_WAIT 太多怎么办？",
+    "followupAnswer": "优先检查短连接频率和连接复用，避免盲目改系统参数。",
+    "test": "压测短连接，观察端口和连接状态。"
+  },
+  {
+    "id": "p0-20",
+    "category": "计算机网络",
+    "question": "TCP 和 UDP 区别？",
+    "answer": "TCP 提供可靠有序字节流；UDP 是无连接数据报，不保证可靠性和顺序。HTTP/3 使用基于 UDP 的 QUIC。",
+    "followup": "UDP 一定不可靠吗？",
+    "followupAnswer": "UDP 本身不保证，但应用层协议可以实现可靠性。",
+    "test": "注入丢包、乱序和延迟。"
+  },
+  {
+    "id": "p0-21",
+    "category": "计算机网络",
+    "question": "HTTP/1.1、HTTP/2、HTTP/3 区别？",
+    "answer": "HTTP/2 有二进制分帧、多路复用和头压缩；HTTP/3 基于 QUIC，减少不同流之间的传输层队头阻塞。",
+    "followup": "HTTP/2 完全没有队头阻塞吗？",
+    "followupAnswer": "不是，仍可能受到 TCP 层队头阻塞影响。",
+    "test": "验证协议协商、连接复用和并发流。"
+  },
+  {
+    "id": "p0-22",
+    "category": "计算机网络",
+    "question": "HTTPS/TLS 做什么？",
+    "answer": "TLS 提供传输加密、完整性和身份认证；握手协商密钥材料并校验证书，之后使用对称加密保护应用数据。",
+    "followup": "证书错误怎么查？",
+    "followupAnswer": "检查过期、域名匹配、信任链和 TLS 兼容性。",
+    "test": "模拟过期证书和错误域名。"
+  },
+  {
+    "id": "p0-23",
+    "category": "计算机网络",
+    "question": "DNS 解析过程？",
+    "answer": "客户端查本地缓存与递归解析器；缓存未命中时，解析器查询根、顶级域和权威 DNS，最终得到记录。",
+    "followup": "TTL 影响什么？",
+    "followupAnswer": "影响缓存有效时间和变更传播速度。",
+    "test": "模拟解析失败、超时和切换 IP。"
+  },
+  {
+    "id": "p0-24",
+    "category": "计算机网络",
+    "question": "502、503、504、429 区别？",
+    "answer": "502 网关收到无效上游响应；503 服务暂时不可用；504 网关等待上游超时；429 请求超过限流配额。",
+    "followup": "不同网关状态码完全一样吗？",
+    "followupAnswer": "不一定，要以产品映射规则和配置为准。",
+    "test": "注入连接重置、过载、延迟和限流。"
+  },
+  {
+    "id": "p0-25",
+    "category": "计算机网络",
+    "question": "超时与重试怎么设计？",
+    "answer": "设置连接、读取和整体超时；重试需限制次数、指数退避与抖动，避免故障时流量放大。",
+    "followup": "请求超时是否意味着没执行？",
+    "followupAnswer": "不意味着，可能服务端已完成但响应丢失。",
+    "test": "模拟请求已执行但响应丢失，验证幂等。"
+  },
+  {
+    "id": "p0-26",
+    "category": "API 网关与大模型",
+    "question": "API 网关怎么设计测试？",
+    "answer": "从路由鉴权、契约兼容、限流熔断、超时重试、性能稳定性和可观测性分层覆盖；用 Mock 和故障注入验证异常路径。",
+    "followup": "网关 504 怎么排查？",
+    "followupAnswer": "通过 Trace 区分连接上游超时、首字节超时和读取超时。",
+    "test": "用可控 Mock Provider 覆盖 200、429、5xx、超时、断流。"
+  },
+  {
+    "id": "p0-27",
+    "category": "API 网关与大模型",
+    "question": "四种限流算法区别？",
+    "answer": "固定窗口简单但有边界突发；滑动窗口更平滑；令牌桶允许突发；漏桶平滑输出。",
+    "followup": "固定窗口每秒 100 就是任意一秒最多 100 吗？",
+    "followupAnswer": "不是，窗口边界可能短时间通过更多。",
+    "test": "测试临界阈值、边界突发、分布式全局计数。"
+  },
+  {
+    "id": "p0-28",
+    "category": "API 网关与大模型",
+    "question": "限流、熔断、降级、重试区别？",
+    "answer": "限流控制流量；熔断隔离持续故障；降级提供替代行为；重试应对临时失败。熔断常有 Closed、Open、Half-Open 三态。",
+    "followup": "怎么证明熔断真的打开？",
+    "followupAnswer": "不仅看响应，还要检查故障 Provider 实际收到的请求数下降。",
+    "test": "模拟持续 5xx、冷却期、半开探测与恢复。"
+  },
+  {
+    "id": "p0-29",
+    "category": "API 网关与大模型",
+    "question": "接口契约与兼容性怎么测？",
+    "answer": "通过 OpenAPI/JSON Schema/Pact 校验请求响应字段、类型、必填、错误码和语义；新旧客户端/服务交叉验证。",
+    "followup": "新增字段一定兼容吗？",
+    "followupAnswer": "不一定，严格拒绝未知字段的客户端可能失败。",
+    "test": "删除字段、改类型、改必填和错误码变更回归。"
+  },
+  {
+    "id": "p0-30",
+    "category": "API 网关与大模型",
+    "question": "幂等性怎么保证？",
+    "answer": "重复执行同一操作，最终业务效果应相同。常用 Idempotency-Key、唯一约束和状态记录，防止重复资源创建和扣费。",
+    "followup": "模型调用超时能直接重试吗？",
+    "followupAnswer": "不能盲目重试，模型可能已执行或计费。",
+    "test": "相同 Key 并发提交、响应丢失后重试。"
+  },
+  {
+    "id": "p0-31",
+    "category": "API 网关与大模型",
+    "question": "SSE 流式调用怎么测？",
+    "answer": "验证首 Token 延迟 TTFT、分片顺序、完整性、客户端取消、中途断流、资源释放与计费一致性。",
+    "followup": "200 之后流中途失败怎么办？",
+    "followupAnswer": "HTTP 状态码通常不能改为 500，需要流内错误或异常关闭语义。",
+    "test": "输出部分 Token 后断连、慢客户端和取消。"
+  },
+  {
+    "id": "p0-32",
+    "category": "API 网关与大模型",
+    "question": "Provider 故障怎么设计专项测试？",
+    "answer": "先确认路由、超时、熔断、重试与备用策略；注入超时、5xx、429、SSE 断流；验证隔离、快速失败、故障切换、恢复与计费幂等。",
+    "followup": "如何证明健康 Provider 不受影响？",
+    "followupAnswer": "同时测健康 Provider 的成功率、P99 和吞吐，检查共享连接池与队列。",
+    "test": "A 故障、B/C 正常，检查熔断前后和恢复期指标。"
+  },
+  {
+    "id": "p0-33",
+    "category": "API 网关与大模型",
+    "question": "大促重保如何轻量验收？",
+    "answer": "采用风险分级：核心链路自动冒烟、关键异常注入、性能基线门禁、灰度监控与回滚预案；完整长稳压测应提前完成。",
+    "followup": "如何量化通过？",
+    "followupAnswer": "按事先约定的成功率、P99、容量、熔断恢复和资源阈值判定。",
+    "test": "灰度前后对比 SLI、告警和故障恢复。"
+  }
+]
